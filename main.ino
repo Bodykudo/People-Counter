@@ -1,21 +1,20 @@
-// Defining the arduino pins
-const int trigPin = 12;  // Ultrasonic sensor trigger pin
-const int echoPin = 4;   // Ultrasonic sensor echo pin
-const int buzzerPin = 6; // Buzzer pin
-
-// Defining variables
-int maxPeople = 5; // The maximum people count at which the buzzer starts to ring
+#include <LiquidCrystal.h>
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2); // Defines the LCD
+int trigPin = 10;                      // Ultrasonic sensor trigger pin
+int echoPin = 9;                       // Ultrasonic sensor echo pin
+int buzzerPin = 6;
+// We're now defining our variables in the processing operation
 int distance, previousDistance, state, previousState, count, countIn, countOut;
-int minDistance = 10; // The minimum distance from the sensor at which it starts to count
-int maxDistance = 15; // The maximum distance from the sensor at which it counts
-long duration;        // The duration of the echo receiving time
-
+int minDistance = 100; // The minimum distance from the sensor at which it starts to count
+int maxDistance = 150; // The maximum distance from the sensor at which it counts
+long duration;         // The duration of the echo receiving time
 void setup()
 {
   // Initializes our components + the serial monitor
-  pinMode(buzzerPin, OUTPUT);
+  lcd.begin(16, 2);
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
+  pinMode(buzzerPin, OUTPUT);
   Serial.begin(9600);
 }
 
@@ -24,6 +23,7 @@ void loop()
   // This stores the previous values for state and distance
   previousState = state;
   previousDistance = distance;
+
   /* This uses the ultrasonic sensor to detect the object's distance
   by the use of the constant speed of sound and duration for the trave;
   of the ultrasonic waves */
@@ -34,7 +34,6 @@ void loop()
   digitalWrite(trigPin, LOW);
   duration = pulseIn(echoPin, HIGH);
   distance = duration * 0.0343 / 2;
-  // Serial.println(distance);
 
   // The main processing for computing the state of the object
   // The object has a state of 1 if and only if it's in the distance range and the distance is decreasing (Person coming in)
@@ -57,20 +56,16 @@ void loop()
   if ((previousState != state) & (minDistance < distance) & (distance < maxDistance))
   {
     count += state;
-    if (state == 1)
-    {
-      Serial.println("Someone entered");
-    }
-    else if (state == -1)
-    {
-      Serial.println("Someone left");
-    }
   }
-  Seria.println("People count:");
-  Serial.println(count);
+
+  // Prints the count value onto the sensor
+  lcd.clear();
+  lcd.print("people inside: ");
+  lcd.setCursor(0, 1);
+  lcd.print(count);
 
   // Checks whether the buzzer must start to ring or not
-  if (count >= maxPeople)
+  if (count >= 5)
   {
     tone(buzzerPin, 1000);
   }
@@ -78,5 +73,6 @@ void loop()
   {
     noTone(buzzerPin);
   }
-  delay(100); // delay is for simulation only
+
+  delay(10); // delay is for simulation only
 }
